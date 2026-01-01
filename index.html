@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Counter</title>
+
+<style>
+  :root {
+    --bg: #EEEEEE;
+    --card: #9DC08B;
+    --primary: #333;
+    --danger: #dc2626;
+    --text: #111827;
+    --muted: #6b7280;
+    --radius: 14px;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 480px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+  }
+
+  h1 {
+    text-align: center;
+    margin: 16px 0 24px;
+    font-size: 1.8rem;
+  }
+
+  .list {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .item {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+  }
+
+  .name {
+    font-weight: 500;
+  }
+
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .count {
+    min-width: 28px;
+    text-align: center;
+    font-weight: 600;
+  }
+
+  .btn {
+    border: none;
+    border-radius: 10px;
+    width: 38px;
+    height: 38px;
+    font-size: 20px;
+    cursor: pointer;
+    background: #e5e7eb;
+  }
+
+  .btn.primary {
+    background: var(--primary);
+    color: white;
+  }
+
+  .footer {
+    position: sticky;
+    bottom: 0;
+    background: var(--bg);
+    padding: 12px 0 4px;
+  }
+
+  .add {
+    display: flex;
+    gap: 8px;
+  }
+
+  input {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+    font-size: 16px;
+  }
+
+  .add-btn {
+    padding: 0 14px;
+    border-radius: 10px;
+    border: none;
+    background: var(--primary);
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+  }
+
+  .delete-btn {
+    padding: 0 14px;
+    border-radius: 10px;
+    border: none;
+    background: var(--primary);
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+  }
+</style>
+</head>
+
+<body>
+<div class="app">
+
+  <h1>Counter</h1>
+
+  <div id="list" class="list"></div>
+
+  <div class="footer">
+    <div class="add">
+      <input id="input" placeholder="Neuer Counter…" />
+      <button class="add-btn" onclick="addItem()">＋</button>
+      <button class="delete-btn" onclick="deleteItem()">−</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let items = JSON.parse(localStorage.getItem("counters")) || [];
+
+  function save() {
+    localStorage.setItem("counters", JSON.stringify(items));
+  }
+
+  function render() {
+    const list = document.getElementById("list");
+    list.innerHTML = "";
+
+    items.forEach(item => {
+      const div = document.createElement("div");
+      div.className = "item";
+
+      div.innerHTML = `
+        <span class="name">${item.name}</span>
+        <div class="controls">
+          <button class="btn primary" onclick="change(${item.id}, -1)">−</button>
+          <span class="count">${item.count}</span>
+          <button class="btn primary" onclick="change(${item.id}, 1)">+</button>
+        </div>
+      `;
+
+      list.appendChild(div);
+    });
+  }
+
+  function addItem() {
+    const input = document.getElementById("input");
+    const name = input.value.trim();
+    if (!name) return;
+
+    items.push({
+      id: Date.now(),
+      name,
+      count: 0
+    });
+
+    input.value = "";
+    save();
+    render();
+  }
+
+  function deleteItem() {
+    const input = document.getElementById("input");
+    const name = input.value.trim();
+    if (!name) return;
+
+    const index = items.findIndex(i => i.name === name);
+    if (index === -1) {
+      alert("Counter nicht gefunden");
+      return;
+    }
+
+    if (confirm(`„${name}“ wirklich löschen?`)) {
+      items.splice(index, 1);
+      save();
+      render();
+      input.value = "";
+    }
+  }
+
+  function change(id, delta) {
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+
+    item.count = Math.max(0, item.count + delta);
+    save();
+    render();
+  }
+
+  render();
+</script>
+</body>
+</html>
